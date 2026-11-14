@@ -80,6 +80,20 @@ End your turn with one message in this shape (it reaches his phone as a notifica
 
 Number continuously across sections; keep your own map of number → candidate id.
 
+Send that message with PushNotification (one short line: "Claude Mag week N: shortlist of X is ready (Y starred)")
+so it reaches his phone, and post the full shortlist as text.
+
+**Then ask in question mode (Tom's preference).** When Tom is in the session, collect his
+picks with AskUserQuestion, `multiSelect: true`, instead of asking him to type numbers:
+- One question per section chunk, up to 4 options each (the tool's limit); split a long
+  section into "(1 of 3)" etc. and fill a chunk with a small neighbouring section when that
+  reads naturally (e.g. Mingming + From the Shelf, AI + Europe).
+- Up to 4 questions per call, so a typical week is two calls.
+- Option `label`: short title, prefixed with ★ when starred (≤ ~30 chars).
+  `description`: source, rough length, and the one-line why.
+- Tom can type in "Other" on any question to change something; follow what he writes.
+- Combine every answer into the picks list; anything not selected is skipped.
+
 ## 3. When Tom replies
 1. Write `issues/<id>/picks.yaml`:
    ```yaml
