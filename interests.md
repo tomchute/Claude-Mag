@@ -120,3 +120,6 @@
 - Self-help that's only American voices (inferred)
 
 ## Recent signals
+- 2026-W46: picked Mingming 13 but not 12; took both Seneca letters (grief, friendship without clinging) and all three science pieces, including envy and sleep.
+- 2026-W46: from Investing 101, took the VC and "making stuff up" pieces and skipped the starred Forgotten Industrialist and the AI-trade piece; took both Disruptive Play pieces and the hybrid-work piece, but skipped the starred "leaders hatch cultures". Skipped the AI swarms essay.
+- 2026-W46: asked to always star Sara Maria Hasbun with a love-and-relationships note, and to choose picks through multiple-choice questions rather than typed numbers.
