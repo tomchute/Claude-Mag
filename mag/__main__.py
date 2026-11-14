@@ -80,6 +80,8 @@ def next_issue(day: dt.date) -> str:
 
 def cmd_gather(args) -> None:
     cfg = config.load()
+    if args.lookback:
+        cfg.lookback_days = args.lookback
     now = dt.datetime.now(dt.timezone.utc)
     issue = args.issue or next_issue(now.date())
     parse_issue(issue)
@@ -197,6 +199,7 @@ def main(argv: list[str] | None = None) -> None:
     g.add_argument("--issue")
     g.add_argument("--out")
     g.add_argument("--force", action="store_true", help="replace candidates even if picks.yaml exists")
+    g.add_argument("--lookback", type=int, help="days to look back (default: lookback_days in sources.yaml)")
     g.set_defaults(func=cmd_gather)
     b = sub.add_parser("build")
     b.add_argument("--issue")
