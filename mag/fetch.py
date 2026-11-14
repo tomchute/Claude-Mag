@@ -34,7 +34,20 @@ class Article:
         return count_words(html_to_text(self.body))
 
 
-def extract_web(html: str) -> str:
+def extract_web(html: str, log=None) -> str:
+    """Best of trafilatura's recall-oriented HTML mode and its default text mode."""
+    rich = _extract_rich(html)
+    plain = trafilatura.extract(html, include_comments=False, include_tables=False) or ""
+    rich_words, plain_words = count_words(html_to_text(rich)), count_words(plain)
+    if log:
+        log(f"    extract: html mode {rich_words} words, text mode {plain_words} words")
+    # The text mode loses formatting, so only prefer it when it found clearly more.
+    if plain_words > 1.25 * rich_words:
+        return text_to_html(plain.replace("\n", "\n\n"))
+    return rich
+
+
+def _extract_rich(html: str) -> str:
     out = trafilatura.extract(
         html,
         output_format="html",
@@ -107,7 +120,7 @@ class Fetcher:
             return feed_body
         try:
             raw, ctype = http_get(cand["url"])
-            web_body = extract_web(raw.decode("utf-8", "replace"))
+            web_body = extract_web(raw.decode("utf-8", "replace"), log=self.log)
             self.log(f"    feed {feed_words} words; web {count_words(html_to_text(web_body))} words from {len(raw) // 1024} KB {ctype.split(';')[0]}")
         except Exception as exc:  # noqa: BLE001
             self.log(f"    feed {feed_words} words; web fetch failed: {exc}")
