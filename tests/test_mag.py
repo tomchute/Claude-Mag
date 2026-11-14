@@ -58,6 +58,11 @@ def test_clean_html_wraps_loose_text_keeping_spaces():
     assert clean_html("Loose <em>inline</em> text<p>para</p>") == "<p>Loose <em>inline</em> text</p>\n<p>para</p>"
 
 
+def test_clean_html_lifts_blocks_out_of_paragraphs_and_links():
+    out = clean_html('<p>Intro <span><h3>Head</h3></span> more</p><p><a href="https://x"><h3>Linked</h3></a></p>')
+    assert out == "<p>Intro </p>\n<h3>Head</h3>\n<p> more</p>\n<h3>Linked</h3>"
+
+
 def test_slice_blocks():
     frag = clean_html("<p>Intro</p><p>Chapter I begins</p><p>middle</p><p>THE END</p><p>Licence</p>")
     assert slice_blocks(frag, "chapter i", "the end") == "<p>Chapter I begins</p>\n<p>middle</p>\n<p>THE END</p>"

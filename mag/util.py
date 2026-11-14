@@ -5,13 +5,13 @@ from __future__ import annotations
 import datetime as dt
 import re
 import time
+import urllib.error
 import urllib.request
 from urllib.parse import urlsplit, urlunsplit
 
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/130.0 Safari/537.36"
-)
+# An honest client identity. If a site refuses it (403/429), we accept the refusal:
+# no disguising as a browser. Paywalled or bot-protected newsletters come in by email instead.
+USER_AGENT = "Mozilla/5.0 (compatible; claude-mag/0.1; personal feed reader)"
 TRACKING = re.compile(r"^(utm_|r$|ref$|ref_src$|source$|publication_id$|post_id$|isFreemail$|triedRedirect$)", re.I)
 
 
@@ -77,7 +77,8 @@ def reading_minutes(words: int, wpm: int = 230) -> int:
 
 
 def http_get(url: str, timeout: int = 30, retries: int = 2) -> tuple[bytes, str]:
-    """GET a URL; returns (body, content-type). Retries transient failures."""
+    """GET a URL; returns (body, content-type). Retries transient network failures only;
+    a refusal (403/429) or a 404 is final."""
     last: Exception | None = None
     for attempt in range(retries + 1):
         try:
@@ -85,13 +86,17 @@ def http_get(url: str, timeout: int = 30, retries: int = 2) -> tuple[bytes, str]
                 url,
                 headers={
                     "User-Agent": USER_AGENT,
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Accept": "text/html,application/xhtml+xml,application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.8",
                     "Accept-Language": "en-GB,en;q=0.9",
                 },
             )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return resp.read(), resp.headers.get("Content-Type", "")
+        except urllib.error.HTTPError as exc:
+            last = exc
+            if exc.code in (403, 404, 410, 429):
+                break
         except Exception as exc:  # noqa: BLE001 — network errors come in many shapes
             last = exc
-            time.sleep(1.5 * (attempt + 1))
+        time.sleep(1.5 * (attempt + 1))
     raise RuntimeError(f"GET {url} failed: {last}")

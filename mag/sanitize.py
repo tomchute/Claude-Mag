@@ -80,6 +80,24 @@ def _clean(el) -> None:
             child.drop_tag()
 
 
+BLOCKS = {"p", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "blockquote", "pre", "hr"}
+PHRASING_ONLY = {"p", "h2", "h3", "h4", "h5", "h6", "pre"} | (INLINE - {"br"})
+
+
+def _fix_nesting(root) -> None:
+    """A heading or paragraph inside a <p> or <a> is invalid XHTML: unwrap the outer element."""
+    changed = True
+    while changed:
+        changed = False
+        for el in root.iter():
+            if el is root or not isinstance(el.tag, str) or el.tag not in PHRASING_ONLY:
+                continue
+            if any(isinstance(d.tag, str) and d.tag in BLOCKS for d in el.iterdescendants()):
+                el.drop_tag()
+                changed = True
+                break
+
+
 def _wrap_loose_inline(root) -> None:
     """At the root, gather stray text and inline elements into <p>s."""
     lead = (root.text or "").lstrip()
@@ -138,6 +156,7 @@ def clean_html(raw: str) -> str:
         return ""
     root = lhtml.fragment_fromstring(raw, create_parent="div")
     _clean(root)
+    _fix_nesting(root)
     _wrap_loose_inline(root)
     _drop_empty(root)
     # Collapse runs of <br> at block edges and consecutive <hr>s.
