@@ -63,6 +63,12 @@ def parse_feed(raw: bytes, section: str, source: str, since: dt.datetime, limit:
     return out
 
 
+def is_post(item: dict) -> bool:
+    """Newsletter posts link to their /p/<slug> page; welcome emails, receipts and
+    subscription notices don't."""
+    return bool(item.get("url"))
+
+
 def merge(rss: list[dict], emails: list[dict], sent_urls: set[str]) -> list[dict]:
     """Dedupe by URL (email copy wins: it carries paid full text), drop already-sent, assign ids."""
     sent_keys = {url_key(u) for u in sent_urls}
@@ -113,12 +119,19 @@ def gather(cfg: Config, now: dt.datetime, sent_urls: set[str], log=print) -> tup
 
         try:
             with Gmail(user, password, cfg.gmail_label) as gm:
+                skipped = 0
                 for msg in gm.since(since.date()):
                     item = parse_newsletter(msg)
+                    if not is_post(item):
+                        skipped += 1
+                        continue
                     item["section"] = cfg.email_section(item["sender"])
                     emails.append(item)
                 total = gm.total()
-            log(f"  Gmail '{cfg.gmail_label}': {len(emails)} in the last {cfg.lookback_days} days ({total} in the label overall)")
+            log(
+                f"  Gmail '{cfg.gmail_label}': {len(emails)} posts in the last {cfg.lookback_days} days"
+                f" ({skipped} non-post emails skipped; {total} in the label overall)"
+            )
         except Exception as exc:  # noqa: BLE001
             errors.append(f"Gmail: {exc}")
             log(f"  ! Gmail: {exc}")

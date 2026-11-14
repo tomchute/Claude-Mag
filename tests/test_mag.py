@@ -12,7 +12,7 @@ import pytest
 from mag import config, fetch
 from mag import __main__ as cli
 from mag.epub import build
-from mag.gather import merge, parse_feed
+from mag.gather import is_post, merge, parse_feed
 from mag.gmail import find_post_url, parse_newsletter
 from mag.sanitize import clean_html, slice_blocks, text_to_html
 from mag.util import clean_url, issue_id, issue_monday, issue_title, parse_issue, url_key
@@ -243,3 +243,14 @@ def test_email_section_routing():
     assert cfg.email_section("Eric Topol <erictopol@substack.com>") == "science"
     assert cfg.email_section("Example Stack <examplestack@substack.com>") == cfg.gmail_section
     assert parse_newsletter(load_email())["sender"] == "Example Stack <examplestack@substack.com>"
+
+
+def test_non_post_emails_are_skipped():
+    from email.message import EmailMessage
+
+    welcome = EmailMessage()
+    welcome["From"] = "Some Stack <somestack@substack.com>"
+    welcome["Subject"] = "You're in. Now the uncomfortable part."
+    welcome.add_alternative('<p>Thanks for subscribing! <a href="https://somestack.substack.com/subscribe">Manage</a></p>', subtype="html")
+    assert not is_post(parse_newsletter(welcome))
+    assert is_post(parse_newsletter(load_email()))
