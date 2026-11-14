@@ -76,6 +76,7 @@
 - Dr Julie Fratantoni, *Better Brain*: brain health from a PhD. Prefer her pieces that cite studies over the mindset ones
 - Melvin Luu, *Capital of One*: anti-hype on business models for the AI economy
 - ᴅᴏɴ, *A Collection of Ideas*: psychology, neuroscience, self-mastery. Leans motivational, so pick posts with substance
+- Sara Maria Hasbun, *Mingming* (serialised fiction): always star her posts, with a 1–2 sentence note on how the chapter relates to love and relationships (Tom's request, 2026-W46)
 - ixcarus, *The Forbidden Files*, and Gabriel's Archive: followed, but the pitch is "secret knowledge" and "life-changing" claims. Only include a post if its claims check out against the sources
 
 **News**
