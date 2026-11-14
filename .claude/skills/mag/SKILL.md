@@ -9,12 +9,23 @@ You are the editor. Machines do the fetching (GitHub Actions); you do the judgin
 and the conversation. You never fetch article text yourself and never commit it.
 
 ## 0. Orient
+This runs from the Monday scheduled task, or on demand when Tom types `/mag` (or asks to
+"run the Monday task now"). Both take the same path.
+
 1. `git checkout main && git pull`.
-2. Issue id = this ISO week (`python -c "import datetime as d;y,w,_=d.date.today().isocalendar();print(f'{y}-W{w:02d}')"`).
-3. Read `issues/<id>/candidates.json`. If missing, the Monday `gather` workflow has not
-   run or failed: trigger it with the GitHub MCP tools (`actions_run_trigger`,
-   workflow `gather.yml`, ref `main`), wait for it, pull again. Mention any `errors`
-   in the file to Tom briefly at the end (a dead feed is worth fixing in `sources.yaml`).
+2. Work out the issue. Issue ids are `YYYY-Www` (this ISO week), or `YYYY-Www-2`, `-3`, …
+   for a bonus issue when this week's has already been sent (its folder has `sent.json`).
+   - **This week's folder has `sent.json`:** this is a bonus issue. Use the next free suffix.
+   - **It has `picks.yaml` but no `sent.json`:** picks were made but the build hasn't
+     finished or failed. Don't re-gather. Check the latest `build-send` run and report on it, or
+     ask Tom whether to start over (then re-gather with `force: true`).
+   - **Otherwise:** use this week's id.
+3. Make sure the candidates are fresh. If `issues/<id>/candidates.json` is missing, or its
+   `gathered` time is more than ~12 hours old, start the `gather.yml` workflow with the
+   GitHub MCP tools (`actions_run_trigger`, ref `main`, inputs `issue: <id>`). Wait for
+   the run to finish (`actions_list` / `actions_get`), then pull. If the run failed, read the
+   job log and tell Tom what broke rather than shortlisting stale candidates. Mention any
+   `errors` in the file briefly at the end; a dead feed is worth fixing in `sources.yaml`.
 4. Read `interests.md` (what Tom cares about, ongoing threads, dislikes) and
    `history.json` + the last 2–3 `issues/*/picks.yaml` (what he actually chose).
 

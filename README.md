@@ -34,7 +34,11 @@ python -m mag build --candidates out/candidates.json --auto 2   # dry-run issue 
 python -m epubcheck out/*.epub
 ```
 
-Manual runs: Actions → `build-send` → *Run workflow* with an issue id. `dry_run` is on by default.
+## Running it now
+
+- **The whole Monday flow:** type `/mag` in a Claude Code session on this repo, or press *Run now* on the weekly scheduled task. Claude re-gathers if the candidates are more than ~12 hours old, then sends the shortlist. If this week's issue was already sent, it becomes a bonus issue (`2026-W46-2`, shown as *Wk 46 (2)* on Kindle).
+- **Gather only:** Actions → `gather` → *Run workflow*. It skips any week that already has picks, unless you tick *force*.
+- **Rebuild or resend an issue:** Actions → `build-send` → *Run workflow* with an issue id. `dry_run` is on by default.
 
 ## Kindle notes
 - Issues appear as `Claude Mag · 2026 · Wk 46` in your library, so they sort together. Emailed documents can't be put into a Collection automatically, so add them to one on the device.

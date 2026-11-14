@@ -15,7 +15,7 @@ from mag.epub import build
 from mag.gather import merge, parse_feed
 from mag.gmail import find_post_url, parse_newsletter
 from mag.sanitize import clean_html, slice_blocks, text_to_html
-from mag.util import clean_url, issue_id, issue_monday, issue_title, url_key
+from mag.util import clean_url, issue_id, issue_monday, issue_title, parse_issue, url_key
 
 FIX = Path(__file__).parent / "fixtures"
 NOW = dt.datetime(2026, 11, 14, tzinfo=dt.timezone.utc)
@@ -31,6 +31,11 @@ def test_issue_ids():
     assert issue_id(dt.date(2026, 11, 14)) == "2026-W46"
     assert issue_monday("2026-W46") == dt.date(2026, 11, 9)
     assert issue_title("Claude Mag · {year} · Wk {week:02d}", "2027-W03") == "Claude Mag · 2027 · Wk 03"
+    assert issue_id(dt.date(2026, 11, 14), 2) == "2026-W46-2"
+    assert issue_monday("2026-W46-2") == dt.date(2026, 11, 9)
+    assert issue_title("Claude Mag · {year} · Wk {week:02d}", "2026-W46-2") == "Claude Mag · 2026 · Wk 46 (2)"
+    with pytest.raises(ValueError):
+        parse_issue("2026-46")
 
 
 def test_urls():
@@ -205,3 +210,23 @@ def test_cli_build_and_dry_send(offline, tmp_path, monkeypatch):
     assert [a["title"] for a in report["articles"]] == ["The Gut Renews Itself"]
     assert [f["title"] for f in report["failures"]] == ["Paid: Sleep and Memory"]
     cli.main(["send", "--issue", "2026-W46", "--epub", report["epub"], "--dry-run"])
+
+
+def test_gather_picks_bonus_issue_and_guards_picks(tmp_path, monkeypatch):
+    issues = tmp_path / "issues"
+    monkeypatch.setattr(cli, "ISSUES", issues)
+    today = dt.date(2026, 11, 14)
+    assert cli.next_issue(today) == "2026-W46"
+    (issues / "2026-W46").mkdir(parents=True)
+    (issues / "2026-W46" / "sent.json").write_text("{}")
+    assert cli.next_issue(today) == "2026-W46-2"
+
+    # A week that already has picks is not re-gathered (ids would shift under the picks)
+    (issues / "2026-W46" / "picks.yaml").write_text("picks: []\n")
+    called = []
+    monkeypatch.setattr("mag.gather.gather", lambda *a, **k: called.append(1) or ([], []))
+    monkeypatch.setattr(cli.config, "load", lambda path=None: None)
+    cli.main(["gather", "--issue", "2026-W46"])
+    assert not called and not (issues / "2026-W46" / "candidates.json").exists()
+    cli.main(["gather", "--issue", "2026-W46", "--force"])
+    assert called and (issues / "2026-W46" / "candidates.json").exists()

@@ -15,20 +15,30 @@ USER_AGENT = (
 TRACKING = re.compile(r"^(utm_|r$|ref$|ref_src$|source$|publication_id$|post_id$|isFreemail$|triedRedirect$)", re.I)
 
 
-def issue_id(day: dt.date) -> str:
-    """ISO week id, e.g. 2026-W46."""
+ISSUE_RE = re.compile(r"^(\d{4})-W(\d{2})(?:-(\d+))?$")
+
+
+def issue_id(day: dt.date, extra: int = 1) -> str:
+    """ISO week id, e.g. 2026-W46; a second issue in the same week is 2026-W46-2."""
     year, week, _ = day.isocalendar()
-    return f"{year}-W{week:02d}"
+    return f"{year}-W{week:02d}" + (f"-{extra}" if extra > 1 else "")
+
+
+def parse_issue(issue: str) -> tuple[int, int, int]:
+    m = ISSUE_RE.match(issue)
+    if not m:
+        raise ValueError(f"bad issue id {issue!r} (expected e.g. 2026-W46 or 2026-W46-2)")
+    return int(m[1]), int(m[2]), int(m[3] or 1)
 
 
 def issue_monday(issue: str) -> dt.date:
-    year, week = issue.split("-W")
-    return dt.date.fromisocalendar(int(year), int(week), 1)
+    year, week, _ = parse_issue(issue)
+    return dt.date.fromisocalendar(year, week, 1)
 
 
 def issue_title(fmt: str, issue: str) -> str:
-    year, week = issue.split("-W")
-    return fmt.format(year=int(year), week=int(week))
+    year, week, extra = parse_issue(issue)
+    return fmt.format(year=year, week=week) + (f" ({extra})" if extra > 1 else "")
 
 
 def clean_url(url: str | None) -> str | None:

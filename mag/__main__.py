@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 
 from . import config
-from .util import issue_id, issue_title
+from .util import issue_id, issue_title, parse_issue
 
 ROOT = config.ROOT
 ISSUES = ROOT / "issues"
@@ -70,10 +70,25 @@ def auto_picks(candidates: list[dict], per_section: int) -> dict:
     return {"note": "Automatic dry-run selection.", "picks": picks}
 
 
+def next_issue(day: dt.date) -> str:
+    """This week's issue, or the next bonus issue (2026-W46-2, ...) if this week's was already sent."""
+    n = 1
+    while (ISSUES / issue_id(day, n) / "sent.json").exists():
+        n += 1
+    return issue_id(day, n)
+
+
 def cmd_gather(args) -> None:
     cfg = config.load()
     now = dt.datetime.now(dt.timezone.utc)
-    issue = args.issue or issue_id(now.date())
+    issue = args.issue or next_issue(now.date())
+    parse_issue(issue)
+    folder = ISSUES / issue
+    if not args.out and (folder / "picks.yaml").exists() and not args.force:
+        # Re-gathering renumbers candidates, which would point the existing picks at the wrong articles.
+        log(f"{issue} already has picks.yaml — not re-gathering (use --force to replace the candidates)")
+        summary(f"Skipped: **{issue}** already has picks. Re-run with *force* to replace its candidates.")
+        return
     log(f"gathering {issue}")
     from .gather import gather, write_candidates
 
@@ -181,6 +196,7 @@ def main(argv: list[str] | None = None) -> None:
     g = sub.add_parser("gather")
     g.add_argument("--issue")
     g.add_argument("--out")
+    g.add_argument("--force", action="store_true", help="replace candidates even if picks.yaml exists")
     g.set_defaults(func=cmd_gather)
     b = sub.add_parser("build")
     b.add_argument("--issue")
