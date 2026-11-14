@@ -104,6 +104,12 @@ class Gmail:
         typ, data = self._imap.search(None, "SINCE", since.strftime("%d-%b-%Y"))
         return [self._fetch(n) for n in (data[0] or b"").split()]
 
+    def total(self) -> int:
+        """Messages in the label overall (for diagnosing an empty week vs an empty label)."""
+        assert self._imap is not None
+        typ, data = self._imap.search(None, "ALL")
+        return len((data[0] or b"").split())
+
     def by_message_id(self, message_id: str) -> EmailMessage | None:
         assert self._imap is not None
         typ, data = self._imap.search(None, "HEADER", "Message-ID", message_id)

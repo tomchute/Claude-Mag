@@ -117,7 +117,8 @@ def gather(cfg: Config, now: dt.datetime, sent_urls: set[str], log=print) -> tup
                     item = parse_newsletter(msg)
                     item["section"] = cfg.email_section(item["sender"])
                     emails.append(item)
-            log(f"  Gmail '{cfg.gmail_label}': {len(emails)}")
+                total = gm.total()
+            log(f"  Gmail '{cfg.gmail_label}': {len(emails)} in the last {cfg.lookback_days} days ({total} in the label overall)")
         except Exception as exc:  # noqa: BLE001
             errors.append(f"Gmail: {exc}")
             log(f"  ! Gmail: {exc}")
