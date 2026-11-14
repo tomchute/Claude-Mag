@@ -31,6 +31,7 @@ class Config:
     sections: list[Section]
     gmail_label: str | None
     gmail_section: str
+    gmail_route: dict[str, str]
     classics_section: Section
 
     def section(self, sid: str) -> Section:
@@ -40,6 +41,14 @@ class Config:
             if s.id == sid:
                 return s
         raise KeyError(f"unknown section {sid!r}")
+
+    def email_section(self, sender: str) -> str:
+        """Section for a labelled email: first `gmail.route` key found in the sender, else the default."""
+        sender = sender.lower()
+        for key, section in self.gmail_route.items():
+            if key in sender:
+                return section
+        return self.gmail_section
 
     @property
     def all_sections(self) -> list[Section]:
@@ -61,5 +70,6 @@ def load(path: Path | None = None) -> Config:
         sections=sections,
         gmail_label=gmail.get("label"),
         gmail_section=gmail.get("section", sections[0].id if sections else "substack"),
+        gmail_route={str(k).lower(): v for k, v in (gmail.get("route") or {}).items()},
         classics_section=Section(classics.get("id", "classics"), classics.get("title", "From the Shelf")),
     )

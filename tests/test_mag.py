@@ -235,3 +235,11 @@ def test_gather_picks_bonus_issue_and_guards_picks(tmp_path, monkeypatch):
     assert not called and not (issues / "2026-W46" / "candidates.json").exists()
     cli.main(["gather", "--issue", "2026-W46", "--force"])
     assert called and (issues / "2026-W46" / "candidates.json").exists()
+
+
+def test_email_section_routing():
+    cfg = config.load()
+    cfg.gmail_route = {"erictopol": "science"}
+    assert cfg.email_section("Eric Topol <erictopol@substack.com>") == "science"
+    assert cfg.email_section("Example Stack <examplestack@substack.com>") == cfg.gmail_section
+    assert parse_newsletter(load_email())["sender"] == "Example Stack <examplestack@substack.com>"

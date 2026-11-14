@@ -19,7 +19,7 @@ workflow artifact. It is never committed.
    - `GMAIL_APP_PASSWORD`: a Google [app password](https://myaccount.google.com/apppasswords) (needs 2-step verification)
    - `KINDLE_EMAIL`: your `…@kindle.com` address (Amazon → Manage Your Content and Devices → Preferences → Personal Document Settings)
 2. **Amazon:** in the same Personal Document Settings page, add your Gmail address to the *Approved Personal Document E-mail List*.
-3. **Gmail:** create a label `claude-mag` and a filter that applies it to paid newsletters (e.g. `from:(@substack.com)`). Make sure IMAP is enabled in Gmail settings.
+3. **Gmail:** create a label `claude-mag` and a filter `from:(substack.com)` → apply label `claude-mag` (tick *Skip the Inbox* if you like). Subscribe by email to every Substack listed in `sources.yaml` → `gmail`. Substack refuses automated feed readers on `*.substack.com`, so email is how they arrive, with full text, paid posts included. Make sure IMAP is enabled in Gmail settings.
 4. **Feeds:** edit `sources.yaml`.
 5. **Interests:** replace `interests.md`.
 6. **Weekly session:** a scheduled Claude task runs the `mag` skill (`.claude/skills/mag/SKILL.md`) each Monday after gather.

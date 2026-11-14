@@ -1,8 +1,11 @@
 # What claude-mag reads each week. Edit freely; ids are referenced by picks.
 #
-# Feeds: any RSS/Atom URL. Every Substack has one at https://<name>.substack.com/feed
-# (or https://<custom-domain>/feed). Free posts arrive in full; paid posts are
-# teasers in RSS — label their emails in Gmail instead (see `gmail` below).
+# Feeds: any RSS/Atom URL that allows automated readers.
+#
+# Substack: *.substack.com feeds refuse automated readers from GitHub's servers
+# (HTTP 403), and we respect that. Subscribe by email instead (free or paid); a Gmail
+# filter labels the emails `claude-mag`, and they arrive with full text. See `gmail`.
+# Substacks on their own domain (e.g. astralcodexten.com/feed) may still work as feeds.
 # Taste, trust levels and caveats per source live in interests.md.
 
 title_format: "Claude Mag · {year} · Wk {week:02d}"   # Kindle library title; keeps issues sorted together
@@ -12,16 +15,7 @@ max_per_feed: 4       # newest N per feed
 sections:
   - id: substack
     title: From Your Substacks
-    feeds:
-      - name: Existential Reflections (Daniel Chechick)
-        url: https://danielchechick.substack.com/feed
-      - name: The Write Path (Kaguura Gichuru)
-        url: https://kaguura.substack.com/feed
-      - name: Better Brain (Dr Julie Fratantoni)
-        url: https://drjuliefratantoni.substack.com/feed
-      - name: The Forbidden Files (ixcarus)
-        url: https://ixcarus.substack.com/feed
-      # Not found yet — need the URLs: Capital of One (Melvin Luu), A Collection of Ideas (ᴅᴏɴ), Gabriel's Archive
+    feeds: []   # all arrive by email; see gmail below
 
   - id: mind
     title: Mind & Ideas
@@ -34,8 +28,6 @@ sections:
         url: https://www.noemamag.com/feed/
       - name: Big Think
         url: https://bigthink.com/feed/
-      - name: Curt Jaimungal
-        url: https://curtjaimungal.substack.com/feed
 
   - id: science
     title: Science & Nature
@@ -46,16 +38,8 @@ sections:
         url: https://nautil.us/feed/
       - name: Undark
         url: https://undark.org/feed/
-      - name: Ground Truths (Eric Topol)
-        url: https://erictopol.substack.com/feed
       - name: Hakai Magazine
         url: https://hakaimagazine.com/feed/
-      - name: Predirections (Jonathan Tonkin)
-        url: https://predirections.substack.com/feed
-      - name: Climate Ages (Silvia Pineda-Munoz)
-        url: https://climateages.substack.com/feed
-      - name: Global Nature Beat (Mike Shanahan)
-        url: https://thenaturebeat.substack.com/feed
       - name: Works in Progress
         url: https://worksinprogress.co/rss.xml
 
@@ -75,11 +59,30 @@ sections:
       - name: The New World
         url: https://www.thenewworld.co.uk/feed/
 
-# Paid newsletters: a Gmail filter applies this label to their emails; the
-# gather/build workflows read it over IMAP. Emails carry the full paid text.
+# Newsletters by email. A Gmail filter applies this label to them, e.g.
+#   from:(substack.com)  ->  apply label "claude-mag"
+# The gather/build workflows read the label over IMAP; emails carry the full text,
+# paid posts included. Emails go to `section` unless the sender matches a `route` key.
+#
+# Subscribe by email to (Substacks Tom follows go to `section`):
+#   Existential Reflections — danielchechick.substack.com
+#   The Write Path — kaguura.substack.com
+#   Better Brain — drjuliefratantoni.substack.com
+#   The Forbidden Files — ixcarus.substack.com
+#   Ground Truths — erictopol.substack.com          (routed to science)
+#   Predirections — predirections.substack.com      (routed to science)
+#   Climate Ages — climateages.substack.com         (routed to science)
+#   Global Nature Beat — thenaturebeat.substack.com (routed to science)
+#   Curt Jaimungal — curtjaimungal.substack.com     (routed to mind)
 gmail:
   label: claude-mag
   section: substack
+  route:          # substring of the sender (name or address) -> section id
+    erictopol: science
+    predirections: science
+    climateages: science
+    thenaturebeat: science
+    curtjaimungal: mind
 
 # Public-domain texts Claude suggests each week (the "Well Read" slot; ~30% of an issue).
 classics:

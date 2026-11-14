@@ -60,6 +60,7 @@ def parse_newsletter(msg: EmailMessage) -> dict:
         "message_id": str(msg.get("Message-ID", "")).strip(),
         "title": str(msg.get("Subject", "")).strip(),
         "source": from_name or from_addr,
+        "sender": f"{from_name} <{from_addr}>",
         "author": None,
         "url": find_post_url(html),
         "published": published,
