@@ -34,17 +34,24 @@ Score each candidate on: fit with `interests.md` (especially "Ongoing threads"),
 substance (prefer `words` ≥ 800; skip link roundups, podcasts-without-transcript,
 announcements, sponsored posts), and novelty against recent picks.
 
-- **Substacks:** show everything gathered (cap ~12), and mark the ones that are
+`interests.md` is the brief: follow its trust notes per source, its "Less of this" list,
+and its proportions (literature is ~30% of an issue).
+
+- **From Your Substacks:** show everything gathered (cap ~12), and mark the ones that are
   genuinely good this week (usually 3–5) with ★ and one line each on *why* — tie it to a
-  named interest or thread where honest. Don't invent connections.
-- **Science / Technology:** show only the best 2–4 per section, each with one line.
-- **From the Shelf:** suggest 2–3 public-domain texts that suit the week's themes or
-  `interests.md` — short stories, essays, poems, or a single chapter. Each needs a
-  plain-text URL you are confident exists: prefer Project Gutenberg
-  `https://www.gutenberg.org/cache/epub/<N>/pg<N>.txt`, using only ebook numbers you
-  are sure of. For a story inside a collection, give `start`/`end` marker lines
-  (exact text of the first and last lines of the piece). Keep each under ~15k words.
-  Never type a text from memory.
+  named interest or thread where honest. Don't invent connections. For sources flagged
+  as "secret knowledge" or motivational, only star a post whose claims you can stand behind,
+  and say so if you're passing over one.
+- **Mind & Ideas, Science & Nature, AI & Building, Britain & Europe:** show only the best
+  2–4 per section, each with one line. Skip a section entirely in a thin week.
+- **From the Shelf:** suggest 2–4 public-domain texts that suit the week's themes or
+  `interests.md`: poems (ideally the original language alongside a translation, when a
+  public-domain edition has both), short stories, essays, a Stoic letter, or a single chapter.
+  Each needs a URL you are confident exists: a Project Gutenberg plain-text URL
+  `https://www.gutenberg.org/cache/epub/<N>/pg<N>.txt` (only ebook numbers you are sure of),
+  or a Wikisource page. For a piece inside a larger book, give `start`/`end` marker lines
+  (exact text of its first and last lines). Keep each under ~15k words. Never type a text
+  from memory. SuttaCentral's site is rendered by JavaScript and can't be fetched yet.
 
 ## 2. Ask Tom
 End your turn with one message in this shape (it reaches his phone as a notification):
@@ -60,11 +67,14 @@ End your turn with one message in this shape (it reaches his phone as a notifica
 > 11. *The Lady with the Dog* — Chekhov (1899, ~8k words). Why.
 > …
 >
-> **Science** (Quanta, Nautilus)
-> 14. ★ *Title* — one line.
+> **Mind & Ideas**
+> 14. ★ *Title* — Psyche. One line.
 >
-> **Technology**
-> 17. *Title* — one line.
+> **Science & Nature**
+> 16. *Title* — Quanta. One line.
+>
+> **AI & Building**
+> 18. *Title* — one line.
 >
 > Reply with numbers (e.g. "1 3 5 11 14"), "stars" for all ★, or tell me what to change.
 

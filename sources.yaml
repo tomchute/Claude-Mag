@@ -3,40 +3,77 @@
 # Feeds: any RSS/Atom URL. Every Substack has one at https://<name>.substack.com/feed
 # (or https://<custom-domain>/feed). Free posts arrive in full; paid posts are
 # teasers in RSS — label their emails in Gmail instead (see `gmail` below).
+# Taste, trust levels and caveats per source live in interests.md.
 
 title_format: "Claude Mag · {year} · Wk {week:02d}"   # Kindle library title; keeps issues sorted together
 lookback_days: 8      # how far back each Monday gather looks
-max_per_feed: 6       # newest N per feed
+max_per_feed: 4       # newest N per feed
 
 sections:
   - id: substack
     title: From Your Substacks
     feeds:
-      # EXAMPLES — replace with your follows (or send an OPML export and Claude will fill this in)
-      - name: Astral Codex Ten
-        url: https://www.astralcodexten.com/feed
-      - name: Experimental History
-        url: https://www.experimental-history.com/feed
-      - name: Noahpinion
-        url: https://www.noahpinion.blog/feed
+      - name: Existential Reflections (Daniel Chechick)
+        url: https://danielchechick.substack.com/feed
+      - name: The Write Path (Kaguura Gichuru)
+        url: https://kaguura.substack.com/feed
+      - name: Better Brain (Dr Julie Fratantoni)
+        url: https://drjuliefratantoni.substack.com/feed
+      - name: The Forbidden Files (ixcarus)
+        url: https://ixcarus.substack.com/feed
+      # Not found yet — need the URLs: Capital of One (Melvin Luu), A Collection of Ideas (ᴅᴏɴ), Gabriel's Archive
+
+  - id: mind
+    title: Mind & Ideas
+    feeds:
+      - name: Psyche
+        url: https://psyche.co/feed.rss
+      - name: Aeon
+        url: https://aeon.co/feed.rss
+      - name: Noema
+        url: https://www.noemamag.com/feed/
+      - name: Big Think
+        url: https://bigthink.com/feed/
+      - name: Curt Jaimungal
+        url: https://curtjaimungal.substack.com/feed
 
   - id: science
-    title: Science
+    title: Science & Nature
     feeds:
       - name: Quanta Magazine
         url: https://www.quantamagazine.org/feed/
       - name: Nautilus
         url: https://nautil.us/feed/
+      - name: Undark
+        url: https://undark.org/feed/
+      - name: Ground Truths (Eric Topol)
+        url: https://erictopol.substack.com/feed
+      - name: Hakai Magazine
+        url: https://hakaimagazine.com/feed/
+      - name: Predirections (Jonathan Tonkin)
+        url: https://predirections.substack.com/feed
+      - name: Climate Ages (Silvia Pineda-Munoz)
+        url: https://climateages.substack.com/feed
+      - name: Global Nature Beat (Mike Shanahan)
+        url: https://thenaturebeat.substack.com/feed
+      - name: Works in Progress
+        url: https://worksinprogress.co/feed/
 
   - id: tech
-    title: Technology
+    title: AI & Building
     feeds:
-      - name: Ars Technica
-        url: https://feeds.arstechnica.com/arstechnica/index
+      - name: Simon Willison
+        url: https://simonwillison.net/atom/everything/
       - name: MIT Technology Review
         url: https://www.technologyreview.com/feed/
-      - name: IEEE Spectrum
-        url: https://spectrum.ieee.org/feeds/feed.rss
+
+  - id: news
+    title: Britain & Europe
+    feeds:
+      - name: Byline Times
+        url: https://bylinetimes.com/feed/
+      - name: The New World
+        url: https://www.thenewworld.co.uk/feed/
 
 # Paid newsletters: a Gmail filter applies this label to their emails; the
 # gather/build workflows read it over IMAP. Emails carry the full paid text.
@@ -44,7 +81,7 @@ gmail:
   label: claude-mag
   section: substack
 
-# Public-domain texts Claude suggests each week (the "Well Read" slot).
+# Public-domain texts Claude suggests each week (the "Well Read" slot; ~30% of an issue).
 classics:
   id: classics
   title: From the Shelf
