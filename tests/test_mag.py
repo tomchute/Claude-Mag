@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import zipfile
 from email import policy
+from email.message import EmailMessage
 from pathlib import Path
 
 import pytest
@@ -91,6 +92,37 @@ def test_parse_newsletter_email():
     assert item["url"] == "https://example.substack.com/p/sleep-and-memory"
     assert item["message_id"] == "<abc123@substack.com>"
     assert item["words"] > 400
+
+
+def test_newsletter_summary_skips_preview_padding_and_header():
+    pad = "\u034f \u00ad" * 150
+    html = (
+        '<div style="display:none;max-height:0;overflow:hidden">'
+        f"Mingming, Serialized Fiction, 2026 Descent of Frost{pad}</div>"
+        '<h1><a href="https://x.substack.com/p/get-rich-first">13. Get Rich First</a></h1>'
+        "<p>Mingming, Serialized Fiction</p><p>Sara Maria Hasbun</p><p>Nov 2</p>"
+        '<p><a href="https://x.substack.com/app-link">READ IN APP</a></p>'
+        "<p>The morning after the wedding, Mingming counted the red envelopes twice and still came up short.</p>"
+        "<p>Her mother said nothing about it at breakfast.</p>"
+    )
+    msg = EmailMessage()
+    msg["From"] = "Sara Maria Hasbun <saramariahasbun@substack.com>"
+    msg["Subject"] = "13. Get Rich First"
+    msg.set_content(html, subtype="html")
+    item = parse_newsletter(msg)
+    assert item["summary"].startswith("The morning after the wedding, Mingming counted")
+    assert "\u034f" not in item["summary"] and "\u00ad" not in item["summary"]
+    assert "Descent of Frost" not in item["summary"]
+    assert len(item["summary"].split()) <= 61
+    assert item["words"] < 60  # padding no longer counted as words
+
+
+def test_newsletter_summary_falls_back_without_paragraphs():
+    msg = EmailMessage()
+    msg["From"] = "A <a@substack.com>"
+    msg["Subject"] = "Short"
+    msg.set_content("<div>Just a short note with no paragraph tags at all here.</div>", subtype="html")
+    assert parse_newsletter(msg)["summary"] == "Just a short note with no paragraph tags at all here."
 
 
 def test_find_post_url_skips_comment_and_redirect_links():
