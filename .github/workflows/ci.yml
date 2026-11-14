@@ -1,0 +1,49 @@
+name: ci
+
+# Unit tests on every branch push; plus a live dry run that gathers real feeds,
+# builds an issue from the first few candidates per section, validates it and
+# uploads the EPUB as an artifact. Nothing is emailed and nothing is committed.
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  live-dry-run:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      GMAIL_USER: ${{ secrets.GMAIL_USER }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements-dev.txt
+      - name: Gather (real feeds, Gmail label if secrets are set)
+        run: python -m mag gather --out out/candidates.json
+      - name: Build from the first 2 candidates per section
+        run: python -m mag build --candidates out/candidates.json --auto 2 --out out
+      - name: Validate EPUB
+        run: python -m epubcheck out/*.epub
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dry-run-epub
+          path: |
+            out/*.epub
+            out/build-report.json
+          retention-days: 7

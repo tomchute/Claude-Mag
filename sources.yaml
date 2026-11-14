@@ -1,0 +1,50 @@
+# What claude-mag reads each week. Edit freely; ids are referenced by picks.
+#
+# Feeds: any RSS/Atom URL. Every Substack has one at https://<name>.substack.com/feed
+# (or https://<custom-domain>/feed). Free posts arrive in full; paid posts are
+# teasers in RSS — label their emails in Gmail instead (see `gmail` below).
+
+title_format: "Claude Mag · {year} · Wk {week:02d}"   # Kindle library title; keeps issues sorted together
+lookback_days: 8      # how far back each Monday gather looks
+max_per_feed: 6       # newest N per feed
+
+sections:
+  - id: substack
+    title: From Your Substacks
+    feeds:
+      # EXAMPLES — replace with your follows (or send an OPML export and Claude will fill this in)
+      - name: Astral Codex Ten
+        url: https://www.astralcodexten.com/feed
+      - name: Experimental History
+        url: https://www.experimental-history.com/feed
+      - name: Noahpinion
+        url: https://www.noahpinion.blog/feed
+
+  - id: science
+    title: Science
+    feeds:
+      - name: Quanta Magazine
+        url: https://www.quantamagazine.org/feed/
+      - name: Nautilus
+        url: https://nautil.us/feed/
+
+  - id: tech
+    title: Technology
+    feeds:
+      - name: Ars Technica
+        url: https://feeds.arstechnica.com/arstechnica/index
+      - name: MIT Technology Review
+        url: https://www.technologyreview.com/feed/
+      - name: IEEE Spectrum
+        url: https://spectrum.ieee.org/feeds/feed.rss
+
+# Paid newsletters: a Gmail filter applies this label to their emails; the
+# gather/build workflows read it over IMAP. Emails carry the full paid text.
+gmail:
+  label: claude-mag
+  section: substack
+
+# Public-domain texts Claude suggests each week (the "Well Read" slot).
+classics:
+  id: classics
+  title: From the Shelf

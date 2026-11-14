@@ -1,0 +1,43 @@
+name: gather
+
+# Monday morning: collect this week's candidates (metadata only) and commit them
+# so the Claude weekly session can shortlist them.
+on:
+  schedule:
+    - cron: "17 4 * * 1"   # 04:17 UTC every Monday
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Issue id, e.g. 2026-W46 (defaults to this week)"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mag-main
+  cancel-in-progress: false
+
+jobs:
+  gather:
+    runs-on: ubuntu-latest
+    env:
+      GMAIL_USER: ${{ secrets.GMAIL_USER }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - name: Gather
+        env:
+          INPUT_ISSUE: ${{ inputs.issue }}
+        run: python -m mag gather ${INPUT_ISSUE:+--issue "$INPUT_ISSUE"}
+      - name: Commit candidates
+        run: |
+          git config user.name "claude-mag bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add issues
+          git diff --cached --quiet && exit 0
+          git commit -m "gather: candidates for $(ls -1 issues | sort | tail -1)"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
