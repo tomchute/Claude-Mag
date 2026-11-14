@@ -14,7 +14,9 @@ import re
 from email import policy
 from email.message import EmailMessage
 
-from .sanitize import html_to_text
+from lxml import html as lhtml
+
+from .sanitize import CONTROL
 from .util import clean_url, count_words, first_words
 
 IMAP_HOST = "imap.gmail.com"
@@ -36,6 +38,40 @@ def _html_part(msg: EmailMessage) -> str:
     return ""
 
 
+# Spacer characters newsletters pad their inbox preview with (combining grapheme joiner,
+# soft hyphen, zero-width spaces/joiners, word joiner, BOM). Invisible, but each one
+# would otherwise count as a "word" and fill the summary.
+INVISIBLE = re.compile("[\u034f\u00ad\u200b-\u200d\u2060\ufeff]")
+# Inline styles that hide an element: the preheader block, tracking stubs.
+HIDDEN = re.compile(r"display\s*:\s*none|max-height\s*:\s*0|mso-hide\s*:\s*all|visibility\s*:\s*hidden", re.I)
+SUMMARY_MIN_WORDS = 8  # paragraphs shorter than this are bylines, dates, buttons
+
+
+def _visible_root(html: str):
+    root = lhtml.fragment_fromstring(CONTROL.sub("", INVISIBLE.sub("", html)), create_parent="div")
+    for bad in root.xpath(".//script|.//style|.//head"):
+        bad.drop_tree()
+    for el in root.xpath(".//*[@style]"):
+        if HIDDEN.search(el.get("style", "")) and el.getparent() is not None:
+            el.drop_tree()
+    return root
+
+
+def email_text(html: str) -> tuple[str, str]:
+    """(summary source, full visible text) for one newsletter email.
+
+    The summary skips the hidden preview line and its padding, then takes the body's
+    first real paragraphs, so it opens on the piece itself rather than on the
+    title, byline and buttons above it."""
+    if not html or not html.strip():
+        return "", ""
+    root = _visible_root(html)
+    full = " ".join(root.text_content().split())
+    paras = [" ".join(p.text_content().split()) for p in root.iter("p")]
+    body = " ".join(p for p in paras if len(p.split()) >= SUMMARY_MIN_WORDS)
+    return body or full, full
+
+
 def find_post_url(html: str) -> str | None:
     for m in POST_URL.finditer(html):
         url = m.group(0)
@@ -48,7 +84,7 @@ def find_post_url(html: str) -> str | None:
 def parse_newsletter(msg: EmailMessage) -> dict:
     """Pull candidate metadata out of one newsletter email."""
     html = _html_part(msg)
-    text = html_to_text(html)
+    lead, text = email_text(html)
     from_name, from_addr = email.utils.parseaddr(str(msg.get("From", "")))
     date = msg.get("Date")
     try:
@@ -64,7 +100,7 @@ def parse_newsletter(msg: EmailMessage) -> dict:
         "author": None,
         "url": find_post_url(html),
         "published": published,
-        "summary": first_words(text, 60),
+        "summary": first_words(lead, 60),
         "words": count_words(text),
     }
 
