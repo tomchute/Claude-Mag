@@ -33,6 +33,7 @@ class Config:
     gmail_section: str
     gmail_route: dict[str, str]
     classics_section: Section
+    cover_subtitle: str = ""
 
     def section(self, sid: str) -> Section:
         if sid == self.classics_section.id:
@@ -72,4 +73,5 @@ def load(path: Path | None = None) -> Config:
         gmail_section=gmail.get("section", sections[0].id if sections else "substack"),
         gmail_route={str(k).lower(): v for k, v in (gmail.get("route") or {}).items()},
         classics_section=Section(classics.get("id", "classics"), classics.get("title", "From the Shelf")),
+        cover_subtitle=str(data.get("cover_subtitle") or ""),
     )

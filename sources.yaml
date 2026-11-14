@@ -9,6 +9,7 @@
 # Taste, trust levels and caveats per source live in interests.md.
 
 title_format: "Claude Mag · {year} · Wk {week:02d}"   # Kindle library title; keeps issues sorted together
+cover_subtitle: "Tom's Weekly Picks"                  # under the masthead on the cover; blank for none
 lookback_days: 8      # how far back each Monday gather looks
 max_per_feed: 4       # newest N per feed
 

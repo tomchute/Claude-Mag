@@ -286,3 +286,27 @@ def test_non_post_emails_are_skipped():
     welcome.add_alternative('<p>Thanks for subscribing! <a href="https://somestack.substack.com/subscribe">Manage</a></p>', subtype="html")
     assert not is_post(parse_newsletter(welcome))
     assert is_post(parse_newsletter(load_email()))
+
+
+def test_cover_title_cut_ends_with_ellipsis():
+    from PIL import Image, ImageDraw
+
+    from mag.epub import _clamp, _font
+
+    d = ImageDraw.Draw(Image.new("RGB", (10, 10)))
+    long = "The Athlete Is the Creator. The University Is Becoming the Network of Everything Now"
+    lines = _clamp(d, long, _font(66, bold=True), 1340, 2)
+    assert len(lines) == 2 and lines[-1].endswith("…")
+    assert _clamp(d, "Short title", _font(66, bold=True), 1340, 2) == ["Short title"]
+
+
+def test_cover_renders_subtitle_and_overflow():
+    import io
+
+    from PIL import Image
+
+    from mag.epub import make_cover
+
+    png = make_cover("Claude Mag · 2026 · Wk 46", "Week of 9 November 2026", [f"Headline number {i}" for i in range(16)], "Tom's Weekly Picks")
+    assert Image.open(io.BytesIO(png)).size == (1600, 2560)
+    assert config.load().cover_subtitle == "Tom's Weekly Picks"

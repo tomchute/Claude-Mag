@@ -63,9 +63,22 @@ def _wrap(draw: ImageDraw.ImageDraw, text: str, font, width: int) -> list[str]:
     return lines
 
 
-def make_cover(title: str, date_line: str, headlines: list[str]) -> bytes:
+def _clamp(draw: ImageDraw.ImageDraw, text: str, font, width: int, max_lines: int) -> list[str]:
+    """Wrap to at most max_lines, ending the last line with an ellipsis if the text was cut."""
+    lines = _wrap(draw, text, font, width)
+    if len(lines) <= max_lines:
+        return lines
+    kept = lines[:max_lines]
+    words = kept[-1].split()
+    while words and draw.textlength(" ".join(words) + "…", font=font) > width:
+        words.pop()
+    kept[-1] = " ".join(words).rstrip(".,;:–—-") + "…"
+    return kept
+
+
+def make_cover(title: str, date_line: str, headlines: list[str], subtitle: str = "") -> bytes:
     W, H, M = 1600, 2560, 130
-    paper, ink, accent = (246, 241, 231), (28, 26, 23), (178, 74, 46)
+    paper, ink, accent, grey = (246, 241, 231), (28, 26, 23), (178, 74, 46), (90, 86, 80)
     img = Image.new("RGB", (W, H), paper)
     d = ImageDraw.Draw(img)
     d.rectangle([0, 0, W, 34], fill=accent)
@@ -74,7 +87,12 @@ def make_cover(title: str, date_line: str, headlines: list[str]) -> bytes:
     d.text((W // 2, y), "CLAUDE", font=mast, fill=ink, anchor="mt")
     y += 250
     d.text((W // 2, y), "MAG", font=mast, fill=accent, anchor="mt")
-    y += 300
+    y += 280
+    if subtitle:
+        d.text((W // 2, y), subtitle, font=_font(70), fill=ink, anchor="mt")
+        y += 130
+    else:
+        y += 20
     d.line([M, y, W - M, y], fill=ink, width=5)
     y += 40
     small = _font(54)
@@ -82,15 +100,26 @@ def make_cover(title: str, date_line: str, headlines: list[str]) -> bytes:
     y += 100
     d.line([M, y, W - M, y], fill=ink, width=2)
     y += 110
-    head = _font(66, bold=True)
-    for text in headlines[:7]:
-        for ln in _wrap(d, text, head, W - 2 * M)[:2]:
-            d.text((M, y), ln, font=head, fill=ink)
-            y += 84
-        y += 54
-        if y > H - 260:
+
+    head, line_h, gap = _font(66, bold=True), 84, 54
+    more_font, more_h = _font(58), 80
+    bottom = H - 230  # keep clear of the footer
+    for i, text in enumerate(headlines):
+        lines = _clamp(d, text, head, W - 2 * M, 2)
+        left_after = len(headlines) - i - 1
+        need = len(lines) * line_h + (gap + more_h if left_after else 0)
+        if y + need > bottom:
             break
-    d.text((W // 2, H - 150), title, font=_font(46), fill=(90, 86, 80), anchor="mt")
+        for ln in lines:
+            d.text((M, y), ln, font=head, fill=ink)
+            y += line_h
+        y += gap
+    else:
+        i = len(headlines)
+    rest = len(headlines) - i
+    if rest:
+        d.text((M, y), f"…and {rest} other piece{'s' if rest != 1 else ''}", font=more_font, fill=accent)
+    d.text((W // 2, H - 150), title, font=_font(46), fill=grey, anchor="mt")
     buf = io.BytesIO()
     img.save(buf, "PNG", optimize=True)
     return buf.getvalue()
@@ -142,7 +171,7 @@ def build(cfg: Config, issue: str, articles: list[Article], out: Path, note: str
     book.add_metadata("DC", "publisher", "Claude Mag")
     book.add_metadata("DC", "date", monday.isoformat())
     book.add_metadata("DC", "description", "; ".join(a.title for a in articles))
-    book.set_cover("cover.png", make_cover(title, date_line, [a.title for a in articles]), create_page=True)
+    book.set_cover("cover.png", make_cover(title, date_line, [a.title for a in articles], cfg.cover_subtitle), create_page=True)
     book.get_item_with_id("cover").is_linear = True  # epubcheck: a non-linear cover must be linked from somewhere
 
     css = epub.EpubItem(uid="style", file_name="style.css", media_type="text/css", content=CSS)
