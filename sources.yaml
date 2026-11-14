@@ -85,7 +85,7 @@ gmail:
     thenaturebeat: science
     curtjaimungal: mind
 
-# Public-domain texts Claude suggests each week (the "Well Read" slot; ~30% of an issue).
+# Public-domain texts Claude suggests each week (poems, stories, essays, letters).
 classics:
   id: classics
   title: From the Shelf
