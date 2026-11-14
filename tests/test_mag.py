@@ -15,7 +15,7 @@ from mag.epub import build
 from mag.gather import merge, parse_feed
 from mag.gmail import find_post_url, parse_newsletter
 from mag.sanitize import clean_html, slice_blocks, text_to_html
-from mag.util import issue_id, issue_monday, issue_title, normalize_url
+from mag.util import clean_url, issue_id, issue_monday, issue_title, url_key
 
 FIX = Path(__file__).parent / "fixtures"
 NOW = dt.datetime(2026, 11, 14, tzinfo=dt.timezone.utc)
@@ -33,8 +33,9 @@ def test_issue_ids():
     assert issue_title("Claude Mag · {year} · Wk {week:02d}", "2027-W03") == "Claude Mag · 2027 · Wk 03"
 
 
-def test_normalize_url():
-    assert normalize_url("https://www.Example.com/p/x/?utm=1#c") == "https://example.com/p/x"
+def test_urls():
+    assert clean_url("https://www.Example.com/p/x/?utm_source=rss&id=3&r=abc#c") == "https://www.Example.com/p/x/?id=3"
+    assert url_key("https://www.Example.com/p/x/?id=3") == url_key("https://example.com/p/x") == "example.com/p/x"
 
 
 # --- sanitize ----------------------------------------------------------------
@@ -68,7 +69,7 @@ def test_text_to_html_escapes():
 def test_parse_feed_filters_old_and_normalizes():
     items = parse_feed((FIX / "feed.xml").read_bytes(), "substack", "Example Stack", NOW - dt.timedelta(days=8), 10)
     assert [i["title"] for i in items] == ["The Gut Renews Itself", "Paid: Sleep and Memory"]
-    assert items[0]["url"] == "https://example.substack.com/p/the-gut-renews-itself"
+    assert items[0]["url"] == "https://example.substack.com/p/the-gut-renews-itself"  # utm_source stripped
     assert items[0]["author"] == "Jane Writer"
     assert items[0]["words"] > 400 and items[1]["words"] < 50
 
@@ -85,6 +86,13 @@ def test_parse_newsletter_email():
 def test_find_post_url_skips_comment_and_redirect_links():
     html = '<a href="https://x.com/p/slug/comments">c</a><a href="https://x.com/p/slug?r=1">t</a>'
     assert find_post_url(html) == "https://x.com/p/slug"
+
+
+def test_merge_matches_email_to_rss_by_title_when_urls_differ():
+    rss = parse_feed((FIX / "feed.xml").read_bytes(), "substack", "Example Stack", NOW - dt.timedelta(days=8), 10)
+    mail = {**parse_newsletter(load_email()), "section": "substack", "url": "https://open.substack.com/pub/example/p/sleep-and-memory"}
+    out = merge(rss, [mail], set())
+    assert sorted((c["title"], c["origin"]) for c in out) == [("Paid: Sleep and Memory", "email"), ("The Gut Renews Itself", "rss")]
 
 
 def test_merge_prefers_email_and_drops_sent():

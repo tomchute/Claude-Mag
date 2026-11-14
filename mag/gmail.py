@@ -15,7 +15,7 @@ from email import policy
 from email.message import EmailMessage
 
 from .sanitize import html_to_text
-from .util import count_words, first_words, normalize_url
+from .util import clean_url, count_words, first_words
 
 IMAP_HOST = "imap.gmail.com"
 
@@ -41,7 +41,7 @@ def find_post_url(html: str) -> str | None:
         url = m.group(0)
         if SKIP_URL.search(url):
             continue
-        return normalize_url(url)
+        return clean_url(url)
     return None
 
 

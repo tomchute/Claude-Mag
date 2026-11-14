@@ -8,7 +8,11 @@ import time
 import urllib.request
 from urllib.parse import urlsplit, urlunsplit
 
-USER_AGENT = "Mozilla/5.0 (compatible; claude-mag/0.1; personal reading digest)"
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/130.0 Safari/537.36"
+)
+TRACKING = re.compile(r"^(utm_|r$|ref$|ref_src$|source$|publication_id$|post_id$|isFreemail$|triedRedirect$)", re.I)
 
 
 def issue_id(day: dt.date) -> str:
@@ -27,14 +31,22 @@ def issue_title(fmt: str, issue: str) -> str:
     return fmt.format(year=int(year), week=int(week))
 
 
-def normalize_url(url: str | None) -> str | None:
-    """Strip query/fragment and trailing slash so the same post dedupes across RSS and email."""
+def clean_url(url: str | None) -> str | None:
+    """The fetchable URL: tracking params and fragment removed, host and path untouched."""
+    if not url:
+        return None
+    parts = urlsplit(url.strip())
+    query = "&".join(q for q in parts.query.split("&") if q and not TRACKING.match(q.split("=", 1)[0]))
+    return urlunsplit((parts.scheme or "https", parts.netloc, parts.path, query, ""))
+
+
+def url_key(url: str | None) -> str | None:
+    """Dedupe key only — never fetch this (dropping www. or a trailing slash can 404)."""
     if not url:
         return None
     parts = urlsplit(url.strip())
     host = parts.netloc.lower().removeprefix("www.")
-    path = parts.path.rstrip("/") or "/"
-    return urlunsplit((parts.scheme.lower() or "https", host, path, "", ""))
+    return f"{host}{parts.path.rstrip('/')}"
 
 
 _WORD = re.compile(r"\w+(?:['’]\w+)*")
@@ -59,7 +71,14 @@ def http_get(url: str, timeout: int = 30, retries: int = 2) -> tuple[bytes, str]
     last: Exception | None = None
     for attempt in range(retries + 1):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "User-Agent": USER_AGENT,
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Accept-Language": "en-GB,en;q=0.9",
+                },
+            )
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return resp.read(), resp.headers.get("Content-Type", "")
         except Exception as exc:  # noqa: BLE001 — network errors come in many shapes

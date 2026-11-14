@@ -16,7 +16,7 @@ import feedparser
 
 from .config import Config
 from .sanitize import html_to_text
-from .util import count_words, first_words, http_get, normalize_url
+from .util import clean_url, count_words, first_words, http_get, url_key
 
 
 def _entry_datetime(entry) -> dt.datetime | None:
@@ -41,7 +41,7 @@ def parse_feed(raw: bytes, section: str, source: str, since: dt.datetime, limit:
         when = _entry_datetime(entry)
         if when is not None and when < since:
             continue
-        link = normalize_url(entry.get("link"))
+        link = clean_url(entry.get("link"))
         if not link:
             continue
         text = html_to_text(entry_html(entry))
@@ -65,11 +65,16 @@ def parse_feed(raw: bytes, section: str, source: str, since: dt.datetime, limit:
 
 def merge(rss: list[dict], emails: list[dict], sent_urls: set[str]) -> list[dict]:
     """Dedupe by URL (email copy wins: it carries paid full text), drop already-sent, assign ids."""
+    sent_keys = {url_key(u) for u in sent_urls}
     by_key: dict[str, dict] = {}
+    title_key: dict[tuple[str, str], str] = {}
     for item in rss + emails:  # later (email) overwrites earlier (rss)
-        key = item.get("url") or f"email:{item.get('message_id')}"
-        if key in sent_urls:
+        key = url_key(item.get("url")) or f"email:{item.get('message_id')}"
+        if key in sent_keys:
             continue
+        # Same post can carry different URLs in RSS vs email (open.substack.com/pub/...): also match on title.
+        tkey = (item["section"], " ".join(item["title"].lower().split()))
+        key = title_key.setdefault(tkey, key)
         prev = by_key.get(key)
         if prev and item["origin"] == "email":
             item = {**item, "summary": item["summary"] or prev["summary"], "author": prev.get("author"), "source": prev["source"]}

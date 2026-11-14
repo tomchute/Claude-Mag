@@ -12,7 +12,7 @@ import trafilatura
 from .config import Config
 from .gather import entry_html
 from .sanitize import clean_html, html_to_text, slice_blocks, text_to_html
-from .util import count_words, http_get, normalize_url
+from .util import count_words, http_get, url_key
 
 FULL_ENOUGH = 400  # words; feed content shorter than this is probably a teaser
 PAYWALL_HINT = re.compile(r"(keep reading with a \d+-day free trial|this post is for paid subscribers|subscribe to keep reading)", re.I)
@@ -97,17 +97,20 @@ class Fetcher:
         feed = self._feed_for(cand)
         if feed is not None:
             for entry in feed.entries:
-                if normalize_url(entry.get("link")) == cand["url"]:
+                if url_key(entry.get("link")) == url_key(cand["url"]):
                     feed_body = clean_html(entry_html(entry))
                     break
         text = html_to_text(feed_body)
-        if count_words(text) >= FULL_ENOUGH and not PAYWALL_HINT.search(text):
+        feed_words = count_words(text)
+        if feed_words >= FULL_ENOUGH and not PAYWALL_HINT.search(text):
+            self.log(f"    feed has full text ({feed_words} words)")
             return feed_body
         try:
-            raw, _ = http_get(cand["url"])
+            raw, ctype = http_get(cand["url"])
             web_body = extract_web(raw.decode("utf-8", "replace"))
+            self.log(f"    feed {feed_words} words; web {count_words(html_to_text(web_body))} words from {len(raw) // 1024} KB {ctype.split(';')[0]}")
         except Exception as exc:  # noqa: BLE001
-            self.log(f"    web fetch failed, using feed text: {exc}")
+            self.log(f"    feed {feed_words} words; web fetch failed: {exc}")
             web_body = ""
         return max((feed_body, web_body), key=lambda b: count_words(html_to_text(b)))
 
