@@ -18,6 +18,18 @@ sections:
     title: From Your Substacks
     feeds: []   # all arrive by email; see gmail below
 
+  - id: relationships
+    title: Relationships & Psychology
+    feeds:
+      - name: Greater Good
+        url: https://greatergood.berkeley.edu/site/rss/relationships
+      - name: The Gottman Institute
+        url: https://www.gottman.com/blog/feed/
+      - name: The Conversation
+        url: https://theconversation.com/uk/topics/relationships-380/articles.atom
+      - name: PsyPost
+        url: https://www.psypost.org/feed/
+
   - id: mind
     title: Mind & Ideas
     feeds:
