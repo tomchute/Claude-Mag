@@ -72,6 +72,10 @@ sections:
       - name: The New World
         url: https://www.thenewworld.co.uk/feed/
 
+  - id: reflection
+    title: For Reflection
+    feeds: []   # one piece a week, found by Claude (see the mag skill)
+
 # Newsletters by email. A Gmail filter applies this label to them, e.g.
 #   from:(substack.com)  ->  apply label "claude-mag"
 # The gather/build workflows read the label over IMAP; emails carry the full text,
