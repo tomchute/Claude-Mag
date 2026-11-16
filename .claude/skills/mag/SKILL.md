@@ -56,6 +56,15 @@ and its proportions (literature is ~30% of an issue).
   Mark these as found by search, and say if you found nothing good. In `picks.yaml` they
   go in as URL picks with `section: relationships` (or another section id), plus `title`,
   `author` if known, `source` and `note`. The build fetches them like any other article.
+- **For Reflection (every week, Tom's request):** offer one strong article or guide that asks
+  the reader difficult questions about themselves, from a psychology or shadow-work angle:
+  something to read slowly, then sit with, journal on or meditate on. Look in the candidates
+  first; otherwise search the web (WebSearch). Favour Psyche guides, Jungian analysts,
+  psychotherapists and researchers writing under their own name. Avoid prompt-list farms,
+  app blogs and pop-psychology listicles. Pick themes near the week's threads (jealousy,
+  attachment, grief, anger, saying no) and don't repeat anything in `history.json`. Star it,
+  give one line on what it asks of him, and add it to `picks.yaml` as a URL pick with
+  `section: reflection`. Put it last in the picks so the issue ends on it.
 - **From the Shelf:** suggest 2–4 public-domain texts that suit the week's themes or
   `interests.md`: poems (ideally the original language alongside a translation, when a
   public-domain edition has both), short stories, essays, a Stoic letter, or a single chapter.

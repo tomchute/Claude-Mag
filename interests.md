@@ -105,6 +105,9 @@
 - Global Nature Beat (Mike Shanahan): biodiversity and conservation
 - NatureStack: monthly roundup of the best nature writing on Substack
 
+## Every issue
+- One "For Reflection" piece: a strong article or guide that asks hard questions of the reader from a psychology or shadow-work angle, to read and then meditate on or think deeply about (Tom's request, 2026-W47).
+
 ## Less of this
 - Anything from writers or outlets tied to the hard right or fascism
 - "Non-mainstream" that is really pseudoscience: anti-vax, "secret knowledge", miracle protocols. Frontier science yes, fringe claims no
