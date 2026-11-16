@@ -1,0 +1,69 @@
+{
+  "sent": "2026-11-16T06:48:05+00:00",
+  "issue": "2026-W47",
+  "title": "Claude Mag · 2026 · Wk 47",
+  "epub": "out/Claude-Mag-2026-W47.epub",
+  "articles": [
+    {
+      "title": "How Old Is This Feeling?",
+      "section": "substack",
+      "url": "https://open.substack.com/pub/danielchechick/p/how-old-is-this-feeling",
+      "words": 977
+    },
+    {
+      "title": "Letter 13: On Groundless Fears",
+      "section": "classics",
+      "url": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_13",
+      "words": 1826
+    },
+    {
+      "title": "The most important sleep metric isn’t hours slept",
+      "section": "mind",
+      "url": "https://bigthink.com/mind-behavior/the-most-important-sleep-metric-isnt-hours-slept/",
+      "words": 1645
+    },
+    {
+      "title": "Letter 56: On Quiet and Study",
+      "section": "classics",
+      "url": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_56",
+      "words": 1590
+    },
+    {
+      "title": "A beginner’s guide to falling in love with Russian literature",
+      "section": "mind",
+      "url": "https://bigthink.com/books/beginners-guide-to-russian-literature/",
+      "words": 2109
+    },
+    {
+      "title": "Can Network Science Transform Health and Nutrition?",
+      "section": "science",
+      "url": "https://www.quantamagazine.org/can-network-science-transform-health-and-nutrition-20261112/",
+      "words": 8983
+    },
+    {
+      "title": "How Wealth Inequality Emerged in This Prehistoric Culture",
+      "section": "science",
+      "url": "https://nautil.us/how-wealth-inequality-emerged-in-this-prehistoric-culture-1286642/",
+      "words": 529
+    },
+    {
+      "title": "More autonomy, fewer NDAs: Volunteers have new requests for brain implant trials",
+      "section": "tech",
+      "url": "https://www.technologyreview.com/2026/11/13/1148474/more-autonomy-fewer-ndas-volunteers-have-new-requests-for-brain-implant-trials/",
+      "words": 1108
+    },
+    {
+      "title": "Death Threats, Doxxing and Burnout: Charities Say They Feel Under Threat Amid Far-Right Attacks",
+      "section": "news",
+      "url": "https://bylinetimes.com/2026/11/10/death-threats-doxxing-and-burnout-charities-say-they-feel-under-threat-amid-far-right-attacks/",
+      "words": 1595
+    },
+    {
+      "title": "The plan to wipe Gaza from the face of the earth",
+      "section": "news",
+      "url": "https://www.thenewworld.co.uk/jp-omalley-the-plan-to-wipe-gaza-from-the-face-of-the-earth/",
+      "words": 1065
+    }
+  ],
+  "failures": []
+}
