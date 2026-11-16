@@ -42,8 +42,20 @@ and its proportions (literature is ~30% of an issue).
   named interest or thread where honest. Don't invent connections. For sources flagged
   as "secret knowledge" or motivational, only star a post whose claims you can stand behind,
   and say so if you're passing over one.
-- **Mind & Ideas, Science & Nature, AI & Building, Britain & Europe:** show only the best
-  2–4 per section, each with one line. Skip a section entirely in a thin week.
+- **Relationships & Psychology, Mind & Ideas, Science & Nature, AI & Building, Britain &
+  Europe:** show only the best 2–4 per section, each with one line. Skip a section entirely
+  in a thin week. Prefer pieces that report or weigh evidence over generic advice.
+- **Found for you (light weeks only):** if fewer than ~4 Substack posts are worth starring,
+  or relationships and psychology are thin across all sections, search the web
+  (WebSearch) for 2–4 recent pieces (last ~4 weeks) on the "Ongoing threads",
+  relationships and psychology first. Only use reputable outlets: magazines, universities,
+  researchers or clinicians writing under their own name (e.g. Psyche, Aeon, Greater Good,
+  The Conversation, Gottman Institute, BPS Research Digest, Nautilus). Skip content farms,
+  app-marketing blogs, AI-generated glossaries, paywalled sites and pop-psychology listicles.
+  Only use URLs that appeared in search results, and don't open the pages yourself.
+  Mark these as found by search, and say if you found nothing good. In `picks.yaml` they
+  go in as URL picks with `section: relationships` (or another section id), plus `title`,
+  `author` if known, `source` and `note`. The build fetches them like any other article.
 - **From the Shelf:** suggest 2–4 public-domain texts that suit the week's themes or
   `interests.md`: poems (ideally the original language alongside a translation, when a
   public-domain edition has both), short stories, essays, a Stoic letter, or a single chapter.
@@ -103,6 +115,11 @@ picks with AskUserQuestion, `multiSelect: true`, instead of asking him to type n
    picks:
      - id: c03
        note: One-line reason shown under the title (optional).
+     - title: Why We Stay Hooked          # a piece found by search in a light week
+       source: Greater Good
+       section: relationships
+       url: https://greatergood.berkeley.edu/article/item/...
+       note: Why it's here.
      - title: The Lady with the Dog
        author: Anton Chekhov
        year: "1899"
