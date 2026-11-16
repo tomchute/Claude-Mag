@@ -1,0 +1,33 @@
+{
+  "sent": "2026-11-16T06:55:00+00:00",
+  "issue": "2026-W47-2",
+  "title": "Claude Mag · 2026 · Wk 47 (2)",
+  "epub": "out/Claude-Mag-2026-W47-2.epub",
+  "articles": [
+    {
+      "title": "The Loneliness of Wanting Your Partner",
+      "section": "relationships",
+      "url": "https://www.gottman.com/blog/loneliness-wanting-your-partner/",
+      "words": 1017
+    },
+    {
+      "title": "Psychologists map the connection between dark personality traits and romantic jealousy",
+      "section": "relationships",
+      "url": "https://www.psypost.org/how-aggressive-personality-traits-fuel-romantic-jealousy-through-obsessive-love/",
+      "words": 1073
+    },
+    {
+      "title": "How to be happy: Tips from the pioneers of well-being research",
+      "section": "relationships",
+      "url": "https://theconversation.com/how-to-be-happy-tips-from-the-pioneers-of-well-being-research-293062",
+      "words": 843
+    },
+    {
+      "title": "Three ways to get in touch with your Shadow self",
+      "section": "reflection",
+      "url": "https://psyche.co/guides/three-ways-to-get-in-touch-with-your-shadow-self",
+      "words": 2659
+    }
+  ],
+  "failures": []
+}
