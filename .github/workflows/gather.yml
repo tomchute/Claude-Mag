@@ -41,8 +41,21 @@ jobs:
           INPUT_ISSUE: ${{ inputs.issue }}
           INPUT_FORCE: ${{ inputs.force }}
           INPUT_LOOKBACK: ${{ inputs.lookback }}
+          EVENT: ${{ github.event_name }}
         run: |
           args=()
+          if [ "$EVENT" = "schedule" ]; then
+            # GitHub can start scheduled runs hours late. By then the weekly Claude run may
+            # already have gathered (and Tom may be choosing from those numbers), or the
+            # issue may be sent. Only ever fill in this week's candidates if they're missing.
+            week=$(date -u +%G-W%V)
+            if [ -e "issues/$week/candidates.json" ]; then
+              echo "Scheduled run: $week already has candidates; nothing to do."
+              echo "Skipped: **$week** already has candidates (scheduled run)." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            args+=(--issue "$week")
+          fi
           [ -n "$INPUT_ISSUE" ] && args+=(--issue "$INPUT_ISSUE")
           [ "$INPUT_FORCE" = "true" ] && args+=(--force)
           [[ "$INPUT_LOOKBACK" =~ ^[0-9]+$ ]] && args+=(--lookback "$INPUT_LOOKBACK")
