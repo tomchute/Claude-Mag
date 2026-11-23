@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 import feedparser
 import trafilatura
@@ -13,6 +15,8 @@ from .config import Config
 from .gather import entry_html
 from .sanitize import clean_html, html_to_text, slice_blocks, text_to_html
 from .util import count_words, http_get, url_key
+
+SHORT_EMAIL = 600  # words; a newsletter email shorter than this may be only a preview
 
 FULL_ENOUGH = 400  # words; feed content shorter than this is probably a teaser
 PAYWALL_HINT = re.compile(r"(keep reading with a \d+-day free trial|this post is for paid subscribers|subscribe to keep reading)", re.I)
@@ -128,7 +132,7 @@ class Fetcher:
         return max((feed_body, web_body), key=lambda b: count_words(html_to_text(b)))
 
     def from_email(self, cand: dict) -> str:
-        from .gmail import message_html
+        from .gmail import is_preview, message_html
 
         msg = self._gmail_conn().by_message_id(cand["message_id"])
         if msg is None:
@@ -137,9 +141,41 @@ class Fetcher:
         extracted = extract_web(html)
         whole = clean_html(html)
         # trafilatura is good at dropping newsletter chrome but can over-trim; fall back if it lost most of the text.
-        if count_words(html_to_text(extracted)) >= 0.6 * count_words(html_to_text(whole)):
-            return extracted
-        return whole
+        body = extracted if count_words(html_to_text(extracted)) >= 0.6 * count_words(html_to_text(whole)) else whole
+        email_words = count_words(html_to_text(body))
+        if (is_preview(html) or email_words < SHORT_EMAIL) and cand.get("url"):
+            web = self.from_web_post(cand["url"])
+            web_words = count_words(html_to_text(web))
+            self.log(f"    email {email_words} words{' (preview)' if is_preview(html) else ''}; web {web_words} words")
+            if web_words > email_words:
+                return web
+        return body
+
+    def from_web_post(self, url: str) -> str:
+        """The public post page, for emails that carry only a preview. A refusal (e.g. 403)
+        is respected: we log it and keep the email text rather than retrying another way."""
+        best = ""
+        for attempt in substack_urls(url):
+            try:
+                raw, _ = http_get(attempt)
+            except Exception as exc:  # noqa: BLE001
+                self.log(f"    web post: {exc}")
+                if "403" in str(exc) or "429" in str(exc):
+                    break  # the site said no; don't keep knocking
+                continue
+            text = raw.decode("utf-8", "replace")
+            if "/api/v1/posts/" in attempt:
+                try:
+                    body = clean_html(json.loads(text).get("body_html") or "")
+                except ValueError:
+                    body = ""
+            else:
+                body = extract_web(text)
+            if count_words(html_to_text(body)) > count_words(html_to_text(best)):
+                best = body
+            if count_words(html_to_text(best)) >= FULL_ENOUGH and not PAYWALL_HINT.search(html_to_text(best)):
+                break
+        return best
 
     def candidate(self, cand: dict, blurb: str | None) -> Article:
         body = self.from_email(cand) if cand["origin"] == "email" else self.from_rss(cand)
@@ -181,3 +217,19 @@ def strip_gutenberg(text: str) -> str:
     start = re.search(r"\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG.*?\*\*\*", text, re.I)
     end = re.search(r"\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG", text, re.I)
     return text[start.end() if start else 0 : end.start() if end else len(text)]
+
+
+def substack_urls(url: str) -> list[str]:
+    """Where a Substack post's public text can be read: the post page, then Substack's own
+    post API (same host), which returns the post's HTML for free posts."""
+    parts = urlsplit(url)
+    path = parts.path
+    host = parts.netloc
+    m = re.match(r"^/pub/([^/]+)(/p/[^/]+)", path) if host == "open.substack.com" else None
+    if m:
+        host, path = f"{m.group(1)}.substack.com", m.group(2)
+    slug = re.match(r"^/p/([^/?#]+)", path)
+    urls = [f"https://{host}{path}"]
+    if slug:
+        urls.append(f"https://{host}/api/v1/posts/{slug.group(1)}")
+    return urls

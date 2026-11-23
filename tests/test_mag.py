@@ -310,3 +310,68 @@ def test_cover_renders_subtitle_and_overflow():
     png = make_cover("Claude Mag · 2026 · Wk 46", "Week of 9 November 2026", [f"Headline number {i}" for i in range(16)], "Tom's Weekly Picks")
     assert Image.open(io.BytesIO(png)).size == (1600, 2560)
     assert config.load().cover_subtitle == "Tom's Weekly Picks"
+
+
+PREVIEW_HTML = (
+    '<p><a href="https://toddbaratz.substack.com/p/real-intimacy">View this post on the web</a></p>'
+    "<p>Everyone wants connection, but no one wants the part where their needs go unmet.</p>"
+    "<p>Our culture has done a really good job of convincing us that real love means ease and nothing else...</p>"
+    "<p>Unsubscribe</p>"
+)
+
+
+def _preview_email():
+    msg = EmailMessage()
+    msg["From"] = "Unfiltered Real Talk <toddbaratz@substack.com>"
+    msg["Subject"] = "Real Intimacy"
+    msg["Message-ID"] = "<prev@substack.com>"
+    msg.set_content(PREVIEW_HTML, subtype="html")
+    return msg
+
+
+def test_preview_email_is_flagged_at_gather():
+    from mag.gmail import is_preview
+
+    assert parse_newsletter(_preview_email())["preview"] is True
+    assert is_preview("<p>A whole post that ends properly, as posts usually do at the end.</p>") is False
+
+
+def test_preview_email_is_replaced_by_the_public_post(monkeypatch):
+    paras = "".join(f"<p>Paragraph {i}: the relationship lives in the gap, the misattunements and the repairs between two people.</p>" for i in range(60))
+    full = f"<html><body><article><h1>Real Intimacy</h1>{paras}</article></body></html>"
+    calls = []
+
+    def fake_get(url, **kw):
+        calls.append(url)
+        return full.encode(), "text/html"
+
+    class FakeGmail:
+        def by_message_id(self, mid):
+            return _preview_email()
+
+    monkeypatch.setattr(fetch, "http_get", fake_get)
+    f = fetch.Fetcher(config.load(), log=lambda *a: None)
+    f._gmail = FakeGmail()
+    cand = {"origin": "email", "message_id": "<prev@substack.com>", "url": "https://open.substack.com/pub/toddbaratz/p/real-intimacy"}
+    body = f.from_email(cand)
+    assert calls[0] == "https://toddbaratz.substack.com/p/real-intimacy"
+    assert body.count("misattunements") > 30
+
+
+def test_preview_email_kept_when_site_refuses(monkeypatch):
+    calls = []
+
+    def refuse(url, **kw):
+        calls.append(url)
+        raise RuntimeError(f"GET {url} failed: HTTP Error 403: Forbidden")
+
+    class FakeGmail:
+        def by_message_id(self, mid):
+            return _preview_email()
+
+    monkeypatch.setattr(fetch, "http_get", refuse)
+    f = fetch.Fetcher(config.load(), log=lambda *a: None)
+    f._gmail = FakeGmail()
+    body = f.from_email({"origin": "email", "message_id": "x", "url": "https://toddbaratz.substack.com/p/real-intimacy"})
+    assert "Everyone wants connection" in body
+    assert len(calls) == 1  # a 403 is final: no second attempt via the API

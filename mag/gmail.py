@@ -72,6 +72,17 @@ def email_text(html: str) -> tuple[str, str]:
     return body or full, full
 
 
+def is_preview(html: str) -> bool:
+    """True when the email carries only the opening of the post: some publications email a
+    preview that stops mid-thought with "..." and a "View this post on the web" link."""
+    if not html or not html.strip():
+        return False
+    root = _visible_root(html)
+    paras = [" ".join(p.text_content().split()) for p in root.iter("p")]
+    body = [p for p in paras if len(p.split()) >= SUMMARY_MIN_WORDS]
+    return bool(body) and body[-1].rstrip().endswith(("...", "…"))
+
+
 def find_post_url(html: str) -> str | None:
     for m in POST_URL.finditer(html):
         url = m.group(0)
@@ -102,6 +113,7 @@ def parse_newsletter(msg: EmailMessage) -> dict:
         "published": published,
         "summary": first_words(lead, 60),
         "words": count_words(text),
+        "preview": is_preview(html),
     }
 
 
