@@ -42,6 +42,10 @@ and its proportions (literature is ~30% of an issue).
   named interest or thread where honest. Don't invent connections. For sources flagged
   as "secret knowledge" or motivational, only star a post whose claims you can stand behind,
   and say so if you're passing over one.
+  Candidates with `preview: true` are emails that carry only the opening of the post (they
+  stop with "..."). The build tries the public post, but Substack refuses GitHub's servers,
+  so usually only that opening reaches the Kindle. Mark them "(preview only, ~N words)",
+  never star them, and suggest reading the full post on the web if it looks good.
 - **Relationships & Psychology, Mind & Ideas, Science & Nature, AI & Building, Britain &
   Europe:** show only the best 2–4 per section, each with one line. Skip a section entirely
   in a thin week. Prefer pieces that report or weigh evidence over generic advice.
